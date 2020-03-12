@@ -9,13 +9,34 @@
 </head>
 
 <body>
-    <select class="selectRegion">
+    <div class="menu">
+        <div class="group">
+            <p class="hint">Выберите регион:</p>
+            <div id="content">
+                <div class="select-wrapper">
+                    <div class="select-arrow-3"></div>
+                    <div class="select-arrow-3"></div>
+                    <select class="selectRegion">
+                        <option value="">select region</option>
+                    </select>
+                </div>
+            </div>
+        </div>
 
-    </select>
-    <input class="regionButton" type="button" value="Выбрать"><br>
-    <select class="selectCity" disabled>
-    </select>
-    <input class="cityButton" type="button" value="Показать информаци по городу">
+        <div class="group">
+            <div id="content">
+                <div class="select-wrapper select-wrapper-2">
+                    <div class="select-arrow-3"></div>
+                    <div class="select-arrow-3"></div>
+                    <select class="selectCity" disabled>
+                        <option value="">select city</option>
+                    </select>
+                </div>
+            </div>
+            <a href="#" class="btn-2 cityButton">Show weather</a>
+        </div>
+    </div>
+
 
     <script src="./index.js"></script>
 </body>

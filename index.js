@@ -844,18 +844,26 @@ const selectRegionString = document.querySelector('.selectRegion');
 const selectCityString = document.querySelector('.selectCity');
 const regionButton = document.querySelector('.regionButton');
 const cityButton = document.querySelector('.cityButton');
+const selectWrapper = document.querySelector('.select-wrapper-2');
+const group = document.querySelector('.group_2');
+let openMenuButton = document.createElement('a');
+const menu = document.querySelector('.menu');
+let p = document.createElement('p');
 
-data[0].regions.forEach((element,index) => {
+data[0].regions.forEach((element, index) => {
     let option = document.createElement('option');
     option.innerHTML = element.name;
     option.value = index;
     selectRegionString.appendChild(option)
 });
-regionButton.addEventListener('click', () => {
-    selectCityString.removeAttribute("disabled") 
-    let regionId = selectRegionString.value;
+selectRegionString.addEventListener('change', () => {
 
-    data[0].regions[regionId].cities.forEach((element,index) => {
+    while(selectCityString.querySelectorAll("option")[1]) {
+        selectCityString.removeChild(selectCityString.lastChild)
+    }
+    selectCityString.removeAttribute("disabled")
+    let regionId = selectRegionString.value;
+    data[0].regions[regionId].cities.forEach((element, index) => {
         let option = document.createElement('option');
         option.innerHTML = element.name;
         option.value = index;
@@ -867,19 +875,73 @@ regionButton.addEventListener('click', () => {
 cityButton.addEventListener('click', () => {
     let cityId = selectCityString.value;
     let regionId = selectRegionString.value;
-    let {lat, lng} = data[0].regions[regionId].cities[cityId];
+    let { lat, lng } = data[0].regions[regionId].cities[cityId];
     let apiId = 'fc332c3268adafcf9872eb470e6ede6b';
-    
-    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${apiId}`).then((response) => {
-       return response.json()
+    fetch(`https://api.openweathermap.org/data/2.5/forecast/?lat=${lat}&lon=${lng}&appid=${apiId}`).then((response) => {
+        return response.json()
     }).then((response) => {
-        console.log(response)
         showInformation(response);
     })
 })
 
 function showInformation(obj) {
-    let p = document.createElement('p');
-    p.innerHTML = "Погода: " + obj.weather[0].main
+    p.className = "city"
+    p.innerHTML = obj.city.name;
     document.body.appendChild(p);
-} 
+    hideMenu();
+    renderDailyWeather(obj.list);
+}
+function hideMenu() {
+    menu.classList += ' hide';
+}
+function renderDailyWeather(obj) {
+    let daysContainer = document.createElement('div');
+    daysContainer.className = "days-container";
+    obj.map((el) => {
+        if (el.dt_txt.indexOf("09:00:00") > 0) {
+            let dayContainer = document.createElement('div');
+            let weekDay = document.createElement('p');
+            let weatherImage = document.createElement('img');
+            let temperatureGroup = document.createElement('div');
+            let dayHumidity = document.createElement('div');
+            dayHumidity.className = 'day-humidity-group';
+            let dayHumidityNumber = document.createElement('p');
+            dayHumidityNumber.innerHTML = el.main.humidity + "%";
+            dayHumidityNumber.className = "day-humidity-group__number";
+            let dayHumidityImg = document.createElement('img');
+            dayHumidityImg.src = "https://pngimage.net/wp-content/uploads/2018/06/humedad-png-8.png";
+            dayHumidityImg.className = "day-humidity-group__image";
+            dayHumidity.appendChild(dayHumidityNumber);
+            dayHumidity.appendChild(dayHumidityImg);
+            temperatureGroup.className = 'temperature-group';
+            let temp = document.createElement('p');
+            temp.className = 'temperature-group__temp';
+            let tempFeel = document.createElement('p');
+            tempFeel.className = 'temperature-group__temp-feel';
+            temp.innerHTML = Math.round(el.main.temp) - 273 + '&deg;';
+            tempFeel.innerHTML = Math.round(el.main.feels_like) - 273 + '&deg;';
+            dayContainer.className = "day";
+            weekDay.className = "day__number";
+            weekDayText = new Date(el.dt_txt.replace(/(\d+)-(\d+)-(\d+)/, '$2/$3/$1'));
+            weekDay.innerHTML = String(weekDayText).slice(0, 3) + " " + String(weekDayText).slice(8, 10);
+            dayContainer.appendChild(weekDay);
+            weatherImage.src = `http://openweathermap.org/img/wn/${el.weather[0].icon}@2x.png`
+            dayContainer.appendChild(weatherImage);
+            temperatureGroup.appendChild(temp);
+            temperatureGroup.appendChild(tempFeel);
+            dayContainer.appendChild(temperatureGroup);
+            dayContainer.appendChild(dayHumidity);
+            daysContainer.appendChild(dayContainer);
+        }
+    })
+    openMenuButton.classList = "btn-2 anotherCityButton";
+    openMenuButton.innerHTML = "Choose another city";
+    openMenuButton.addEventListener('click', () => {
+        menu.classList = 'menu';
+
+        daysContainer.parentNode.removeChild(p);
+        document.body.removeChild(daysContainer);
+    })
+    daysContainer.appendChild(openMenuButton);
+    document.body.appendChild(daysContainer);
+}
